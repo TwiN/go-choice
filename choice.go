@@ -22,10 +22,6 @@ func check(err error) {
 	}
 }
 
-//func main() {
-//	println("You have selected: " + Pick("What do you want to do?", []string{"Connect to the production environment", "Connect to the test environment", "Update"}))
-//}
-
 func Pick(question string, choicesToPickFrom []string) string {
 	if len(choicesToPickFrom) == 0 {
 		panic("No choices to choose from")
