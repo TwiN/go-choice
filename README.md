@@ -1,6 +1,6 @@
 # go-choice
 
-A very simple interactive library for selecting an option.
+A very simple library for interactively selecting an option on a terminal 
 
 
 ## Usage
