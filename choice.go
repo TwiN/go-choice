@@ -3,6 +3,7 @@ package gochoice
 import (
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
+	"strings"
 )
 
 type Choice struct {
@@ -66,14 +67,19 @@ func move(choices []Choice, increment int) Choice {
 
 func render(question string, options []Choice) {
 	check(termbox.Clear(bgColor, bgColor))
-	printText(1, 0, question, fgColor, bgColor)
-	for i, option := range options {
-		lineNumber := i + 1
+	lineNumber := 0
+	for _, line := range strings.Split(question, "\n") {
+		printText(1, lineNumber, line, fgColor, bgColor)
+		lineNumber += 1
+	}
+
+	for _, option := range options {
 		if option.Selected {
 			printText(1, lineNumber, "> "+option.Value, fgColor, bgColor)
 		} else {
 			printText(3, lineNumber, option.Value, fgColor, bgColor)
 		}
+		lineNumber += 1
 	}
 	check(termbox.Flush())
 }
