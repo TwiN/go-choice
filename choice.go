@@ -31,7 +31,7 @@ func Pick(question string, choicesToPickFrom []string) string {
 	for i, choice := range choicesToPickFrom {
 		choices = append(choices, Choice{Value: choice, Selected: i == 0})
 	}
-	check(termbox.Init())
+	termbox.Init()
 	defer termbox.Close()
 	var selectedChoice = choices[0]
 	for {
