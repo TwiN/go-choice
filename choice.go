@@ -1,6 +1,7 @@
 package gochoice
 
 import (
+	"errors"
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 	"strings"
@@ -23,28 +24,40 @@ func check(err error) {
 	}
 }
 
-func Pick(question string, choicesToPickFrom []string) string {
+func Pick(question string, choicesToPickFrom []string) (string, error) {
 	if len(choicesToPickFrom) == 0 {
-		panic("No choices to choose from")
+		return "", errors.New("no choices to choose from")
 	}
 	var choices []Choice
 	for i, choice := range choicesToPickFrom {
 		choices = append(choices, Choice{Value: choice, Selected: i == 0})
 	}
-	termbox.Init()
+	if err := termbox.Init(); err != nil {
+		return "", err
+	}
 	defer termbox.Close()
 	var selectedChoice = choices[0]
 	for {
 		render(question, choices)
-		switch ev := termbox.PollEvent(); ev.Key {
-		case termbox.KeyArrowDown:
-			selectedChoice = move(choices, 1)
-		case termbox.KeyArrowUp:
-			selectedChoice = move(choices, -1)
-		case termbox.KeyEnter:
-			return selectedChoice.Value
-		case termbox.KeyEsc:
-			panic("Aborted")
+		switch ev := termbox.PollEvent(); ev.Ch {
+		case 0:
+			switch ev.Key {
+			case termbox.KeyArrowUp:
+				selectedChoice = moveUp(choices)
+			case termbox.KeyArrowDown:
+				selectedChoice = moveDown(choices)
+			case termbox.KeyEnter, termbox.KeySpace:
+				return selectedChoice.Value, nil
+			case termbox.KeyEsc, termbox.KeyBackspace:
+				return "", errors.New("aborted")
+			default:
+			}
+		case 'q':
+			return "", errors.New("aborted")
+		case 'k', 'w': // up
+			selectedChoice = moveUp(choices)
+		case 'j', 's': // down
+			selectedChoice = moveDown(choices)
 		default:
 		}
 	}
@@ -63,6 +76,14 @@ func move(choices []Choice, increment int) Choice {
 		}
 	}
 	panic("Something went wrong")
+}
+
+func moveUp(choices []Choice) Choice {
+	return move(choices, -1)
+}
+
+func moveDown(choices []Choice) Choice {
+	return move(choices, 1)
 }
 
 func render(question string, options []Choice) {
