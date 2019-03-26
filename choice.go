@@ -58,6 +58,8 @@ func Pick(question string, choicesToPickFrom []string) (string, error) {
 			selectedChoice = moveUp(choices)
 		case 'j', 's': // down
 			selectedChoice = moveDown(choices)
+		case 'l', 'd': // right
+			return selectedChoice.Value, nil
 		default:
 		}
 	}
