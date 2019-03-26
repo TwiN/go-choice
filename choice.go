@@ -48,7 +48,7 @@ func Pick(question string, choicesToPickFrom []string) (string, error) {
 				selectedChoice = moveDown(choices)
 			case termbox.KeyEnter, termbox.KeySpace:
 				return selectedChoice.Value, nil
-			case termbox.KeyEsc, termbox.KeyBackspace:
+			case termbox.KeyEsc:
 				return "", errors.New("aborted")
 			default:
 			}
