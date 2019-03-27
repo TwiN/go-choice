@@ -35,6 +35,7 @@ func Pick(question string, choicesToPickFrom []string) (string, error) {
 	if err := termbox.Init(); err != nil {
 		return "", err
 	}
+	termbox.SetInputMode(termbox.InputEsc)
 	defer termbox.Close()
 	var selectedChoice = choices[0]
 	for {
