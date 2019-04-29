@@ -10,7 +10,6 @@ import (
 type Choice struct {
 	Value    string
 	Selected bool
-	//Disabled bool
 }
 
 const (
