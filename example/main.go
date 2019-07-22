@@ -6,7 +6,7 @@ import (
 
 func main() {
 	choice, err := gochoice.Pick(
-		"What do you want to do?\nPick one option below",
+		"What do you want to do?",
 		[]string{
 			"Connect to the production environment",
 			"Connect to the test environment",

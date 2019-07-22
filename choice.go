@@ -7,23 +7,22 @@ import (
 	"strings"
 )
 
-type Choice struct {
-	Value    string
-	Selected bool
-}
-
-const (
-	fgColor = termbox.ColorWhite
-	bgColor = termbox.ColorBlack
-)
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
+var defaultConfig = &Config{
+	TextColor:         White,
+	BackgroundColor:   Black,
+	SelectedTextColor: White,
+	SelectedTextBold:  false,
 }
 
 func Pick(question string, choicesToPickFrom []string) (string, error) {
+	return PickWithConfig(question, choicesToPickFrom, defaultConfig)
+}
+
+func PickWithConfig(question string, choicesToPickFrom []string, config *Config) (string, error) {
+	return pick(question, choicesToPickFrom, config)
+}
+
+func pick(question string, choicesToPickFrom []string, config *Config) (string, error) {
 	if len(choicesToPickFrom) == 0 {
 		return "", errors.New("no choices to choose from")
 	}
@@ -38,7 +37,7 @@ func Pick(question string, choicesToPickFrom []string) (string, error) {
 	defer termbox.Close()
 	var selectedChoice = choices[0]
 	for {
-		render(question, choices)
+		render(question, choices, config)
 		switch ev := termbox.PollEvent(); ev.Ch {
 		case 0:
 			switch ev.Key {
@@ -88,19 +87,22 @@ func moveDown(choices []Choice) Choice {
 	return move(choices, 1)
 }
 
-func render(question string, options []Choice) {
-	check(termbox.Clear(bgColor, bgColor))
+func render(question string, options []Choice, config *Config) {
+	check(termbox.Clear(config.BackgroundColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute()))
 	lineNumber := 0
 	for _, line := range strings.Split(question, "\n") {
-		printText(1, lineNumber, line, fgColor, bgColor)
+		printText(1, lineNumber, line, config.TextColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute())
 		lineNumber += 1
 	}
-
 	for _, option := range options {
 		if option.Selected {
-			printText(1, lineNumber, "> "+option.Value, fgColor, bgColor)
+			selectedTextAttribute := config.SelectedTextColor.toTermboxAttribute()
+			if config.SelectedTextBold {
+				selectedTextAttribute |= termbox.AttrBold
+			}
+			printText(1, lineNumber, "> "+option.Value, selectedTextAttribute, config.BackgroundColor.toTermboxAttribute())
 		} else {
-			printText(3, lineNumber, option.Value, fgColor, bgColor)
+			printText(3, lineNumber, option.Value, config.TextColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute())
 		}
 		lineNumber += 1
 	}
@@ -111,5 +113,11 @@ func printText(x, y int, text string, fg, bg termbox.Attribute) {
 	for _, character := range text {
 		termbox.SetCell(x, y, character, fg, bg)
 		x += runewidth.RuneWidth(character)
+	}
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
 	}
 }
