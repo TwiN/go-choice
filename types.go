@@ -3,6 +3,7 @@ package gochoice
 import "github.com/nsf/termbox-go"
 
 type Choice struct {
+	Id       int
 	Value    string
 	Selected bool
 }
