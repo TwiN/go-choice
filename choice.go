@@ -102,7 +102,7 @@ func render(question string, options []Choice, config *Config, selectedChoice *C
 		max += 1
 	}
 	for _, option := range options {
-		if option.Id-1 <= min-maximumThatCanBeDisplayed && !(option.Id-1 > max-maximumThatCanBeDisplayed) {
+		if option.Id <= (min+1)-maximumThatCanBeDisplayed && !(option.Id > (min+1)-maximumThatCanBeDisplayed) {
 			continue
 		}
 		if option.Selected {
