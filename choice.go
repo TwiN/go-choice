@@ -91,11 +91,12 @@ func render(question string, options []Choice, config *Config, selectedChoice *C
 	check(termbox.Clear(config.BackgroundColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute()))
 	_, maximumThatCanBeDisplayed := termbox.Size()
 	lineNumber := 0
-	for _, line := range strings.Split(question, "\n") {
+	questionLines := strings.Split(question, "\n")
+	for _, line := range questionLines {
 		printText(1, lineNumber, line, config.TextColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute())
 		lineNumber += 1
 	}
-	min := selectedChoice.Id
+	min := selectedChoice.Id + len(questionLines)
 	max := maximumThatCanBeDisplayed
 	if selectedChoice.Id > max {
 		min += 1
