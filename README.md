@@ -30,7 +30,7 @@ func main() {
 
 ![example](assets/example.gif)
 
-Alternatively, you can customize the experience further by using `PickWithConfig` instead of `Pick`:
+You can customize the experience further by appending options at the end of the `Pick` function:
 
 ```go
 package main
@@ -40,19 +40,18 @@ import (
 )
 
 func main() {
-	choice, err := gochoice.PickWithConfig(
+	choice, err := gochoice.Pick(
 		"What do you want to do?\nYour question can also span multiple lines",
 		[]string{
 			"Connect to the production environment",
 			"Connect to the test environment",
 			"Update",
 		},
-		&gochoice.Config{
-			BackgroundColor:   gochoice.Black,
-			TextColor:         gochoice.White,
-			SelectedTextColor: gochoice.Red,
-			SelectedTextBold:  true,
-		})
+        gochoice.OptionBackgroundColor(gochoice.Black),
+        gochoice.OptionTextColor(gochoice.White),
+        gochoice.OptionSelectedTextColor(gochoice.Red),
+        gochoice.OptionSelectedTextBold(),
+    )
 	if err != nil {
 		println("You didn't select anything!")
 	} else {
