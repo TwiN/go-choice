@@ -7,19 +7,19 @@ import (
 	"strings"
 )
 
-var defaultConfig = &Config{
+var defaultConfig = Config{
 	TextColor:         White,
 	BackgroundColor:   Black,
 	SelectedTextColor: White,
 	SelectedTextBold:  false,
 }
 
-func Pick(question string, choicesToPickFrom []string) (string, error) {
-	return PickWithConfig(question, choicesToPickFrom, defaultConfig)
-}
-
-func PickWithConfig(question string, choicesToPickFrom []string, config *Config) (string, error) {
-	return pick(question, choicesToPickFrom, config)
+func Pick(question string, choicesToPickFrom []string, options ...Option) (string, error) {
+	config := defaultConfig
+	for _, option := range options {
+		option(&config)
+	}
+	return pick(question, choicesToPickFrom, &config)
 }
 
 func pick(question string, choicesToPickFrom []string, config *Config) (string, error) {

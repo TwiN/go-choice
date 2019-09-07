@@ -48,3 +48,29 @@ func (c Color) toTermboxAttribute() termbox.Attribute {
 		return termbox.ColorWhite
 	}
 }
+
+type Option func(config *Config)
+
+func OptionTextColor(color Color) func(config *Config) {
+	return func(config *Config) {
+		config.TextColor = color
+	}
+}
+
+func OptionBackgroundColor(color Color) func(config *Config) {
+	return func(config *Config) {
+		config.BackgroundColor = color
+	}
+}
+
+func OptionSelectedTextColor(color Color) func(config *Config) {
+	return func(config *Config) {
+		config.SelectedTextColor = color
+	}
+}
+
+func OptionSelectedTextBold() func(config *Config) {
+	return func(config *Config) {
+		config.SelectedTextBold = true
+	}
+}
