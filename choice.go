@@ -2,8 +2,9 @@ package gochoice
 
 import (
 	"errors"
+	"fmt"
+	"github.com/gdamore/tcell"
 	"github.com/mattn/go-runewidth"
-	"github.com/nsf/termbox-go"
 	"strings"
 )
 
@@ -30,38 +31,69 @@ func pick(question string, choicesToPickFrom []string, config *Config) (string, 
 	for i, choice := range choicesToPickFrom {
 		choices = append(choices, &Choice{Id: i, Value: choice, Selected: i == 0})
 	}
-	if err := termbox.Init(); err != nil {
+	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
+	screen, err := tcell.NewScreen()
+	if err != nil {
 		return "", err
 	}
-	termbox.SetInputMode(termbox.InputEsc)
-	defer termbox.Close()
-	var selectedChoice = choices[0]
-	for {
-		render(question, choices, config, selectedChoice)
-		switch ev := termbox.PollEvent(); ev.Ch {
-		case 0:
-			switch ev.Key {
-			case termbox.KeyArrowUp:
-				selectedChoice = moveUp(choices)
-			case termbox.KeyArrowDown:
-				selectedChoice = moveDown(choices)
-			case termbox.KeyEnter, termbox.KeySpace:
-				return selectedChoice.Value, nil
-			case termbox.KeyEsc:
-				return "", errors.New("aborted")
-			default:
-			}
-		case 'q':
-			return "", errors.New("aborted")
-		case 'k', 'w': // up
-			selectedChoice = moveUp(choices)
-		case 'j', 's': // down
-			selectedChoice = moveDown(choices)
-		case 'l', 'd': // right
-			return selectedChoice.Value, nil
-		default:
-		}
+	if err := screen.Init(); err != nil {
+		return "", err
 	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.Show()
+	quit := make(chan struct{})
+	var selectedChoice = choices[0]
+
+	go func() {
+		for {
+			go render(screen, question, choices, config, selectedChoice)
+			ev := screen.PollEvent()
+			switch ev := ev.(type) {
+			case *tcell.EventKey:
+				switch ev.Key() {
+				case tcell.KeyUp:
+					selectedChoice = moveUp(choices)
+				case tcell.KeyDown:
+					selectedChoice = moveDown(choices)
+				case tcell.KeyEnter, tcell.KeyRight:
+					// The current selected choice is already set, so we just quit
+					close(quit)
+					return
+				case tcell.KeyEscape:
+					// No choices were selected, so we'll set selectedChoice to nil and quit
+					selectedChoice = nil
+					close(quit)
+					return
+				case tcell.KeyRune:
+					switch ev.Rune() {
+					case 'k', 'w': // Up
+						selectedChoice = moveUp(choices)
+					case 'j', 's': // Down
+						selectedChoice = moveDown(choices)
+					case ' ', 'l', 'd': // Select
+						// The current selected choice is already set, so we just quit
+						close(quit)
+						return
+					case 'q': // Quit
+						// No choices were selected, so we'll set selectedChoice to nil and quit
+						selectedChoice = nil
+						close(quit)
+						return
+					}
+				}
+			case *tcell.EventResize:
+				screen.Sync()
+			}
+		}
+	}()
+
+	<-quit
+
+	if selectedChoice == nil {
+		return "", errors.New("aborted")
+	}
+	return selectedChoice.Value, err
 }
 
 func move(choices []*Choice, increment int) *Choice {
@@ -87,13 +119,13 @@ func moveDown(choices []*Choice) *Choice {
 	return move(choices, 1)
 }
 
-func render(question string, options []*Choice, config *Config, selectedChoice *Choice) {
-	check(termbox.Clear(config.BackgroundColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute()))
-	_, maximumThatCanBeDisplayed := termbox.Size()
+func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice) {
+	screen.Clear()
+	_, maximumThatCanBeDisplayed := screen.Size()
 	lineNumber := 0
 	questionLines := strings.Split(question, "\n")
 	for _, line := range questionLines {
-		printText(1, lineNumber, line, config.TextColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute())
+		printText(screen, 1, lineNumber, line, config.TextColor.toTcellColor(), config.BackgroundColor.toTcellColor(), config.SelectedTextBold)
 		lineNumber += 1
 	}
 	min := selectedChoice.Id + len(questionLines)
@@ -107,28 +139,18 @@ func render(question string, options []*Choice, config *Config, selectedChoice *
 			continue
 		}
 		if option.Selected {
-			selectedTextAttribute := config.SelectedTextColor.toTermboxAttribute()
-			if config.SelectedTextBold {
-				selectedTextAttribute |= termbox.AttrBold
-			}
-			printText(1, lineNumber, "> "+option.Value, selectedTextAttribute, config.BackgroundColor.toTermboxAttribute())
+			printText(screen, 1, lineNumber, fmt.Sprintf("> %s", option.Value), config.SelectedTextColor.toTcellColor(), config.BackgroundColor.toTcellColor(), config.SelectedTextBold)
 		} else {
-			printText(3, lineNumber, option.Value, config.TextColor.toTermboxAttribute(), config.BackgroundColor.toTermboxAttribute())
+			printText(screen, 3, lineNumber, option.Value, config.TextColor.toTcellColor(), config.BackgroundColor.toTcellColor(), config.SelectedTextBold)
 		}
 		lineNumber += 1
 	}
-	check(termbox.Flush())
+	screen.Sync()
 }
 
-func printText(x, y int, text string, fg, bg termbox.Attribute) {
+func printText(screen tcell.Screen, x, y int, text string, fg, bg tcell.Color, bold bool) {
 	for _, character := range text {
-		termbox.SetCell(x, y, character, fg, bg)
+		screen.SetCell(x, y, tcell.StyleDefault.Background(bg).Foreground(fg), character)
 		x += runewidth.RuneWidth(character)
-	}
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
 	}
 }
