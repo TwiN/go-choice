@@ -20,10 +20,17 @@ func Pick(question string, choicesToPickFrom []string, options ...Option) (strin
 	for _, option := range options {
 		option(&config)
 	}
-	return pick(question, choicesToPickFrom, &config)
+	screen, err := createScreen()
+	if err != nil {
+		return "", err
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.Show()
+	return pick(question, choicesToPickFrom, screen, &config)
 }
 
-func pick(question string, choicesToPickFrom []string, config *Config) (string, error) {
+func pick(question string, choicesToPickFrom []string, screen tcell.Screen, config *Config) (string, error) {
 	if len(choicesToPickFrom) == 0 {
 		return "", errors.New("no choices to choose from")
 	}
@@ -31,17 +38,7 @@ func pick(question string, choicesToPickFrom []string, config *Config) (string, 
 	for i, choice := range choicesToPickFrom {
 		choices = append(choices, &Choice{Id: i, Value: choice, Selected: i == 0})
 	}
-	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
-	screen, err := tcell.NewScreen()
-	if err != nil {
-		return "", err
-	}
-	if err := screen.Init(); err != nil {
-		return "", err
-	}
-	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
-	screen.Show()
+
 	quit := make(chan struct{})
 	var selectedChoice = choices[0]
 
@@ -93,7 +90,19 @@ func pick(question string, choicesToPickFrom []string, config *Config) (string, 
 	if selectedChoice == nil {
 		return "", errors.New("aborted")
 	}
-	return selectedChoice.Value, err
+	return selectedChoice.Value, nil
+}
+
+func createScreen() (tcell.Screen, error) {
+	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
+	screen, err := tcell.NewScreen()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new screen: %v", err)
+	}
+	if err := screen.Init(); err != nil {
+		return nil, fmt.Errorf("failed to initialize screen: %v", err)
+	}
+	return screen, nil
 }
 
 func move(choices []*Choice, increment int) *Choice {
