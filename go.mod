@@ -1,8 +1,8 @@
 module github.com/TwinProduction/go-choice
 
-go 1.12
+go 1.13
 
 require (
+	github.com/gdamore/tcell v1.2.0
 	github.com/mattn/go-runewidth v0.0.4
-	github.com/nsf/termbox-go v0.0.0-20190817171036-93860e161317
 )

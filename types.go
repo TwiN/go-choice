@@ -1,6 +1,8 @@
 package gochoice
 
-import "github.com/nsf/termbox-go"
+import (
+	"github.com/gdamore/tcell"
+)
 
 type Choice struct {
 	Id       int
@@ -25,27 +27,71 @@ const (
 	Blue
 	Magenta
 	Cyan
+	Orange
+	Gold
+	Gray
+	Grey
+	Fuchsia
+	Brown
+	Pink
+	Purple
+	Crimson
+	DarkRed
+	DarkBlue
+	DarkGray
+	DarkGrey
+	LightBlue
+	LightGray
+	LightGrey
 	White
 )
 
-func (c Color) toTermboxAttribute() termbox.Attribute {
+func (c Color) toTcellColor() tcell.Color {
 	switch c {
 	case Black:
-		return termbox.ColorBlack
+		return tcell.ColorBlack
 	case Red:
-		return termbox.ColorRed
+		return tcell.ColorRed
 	case Green:
-		return termbox.ColorGreen
+		return tcell.ColorGreen
 	case Yellow:
-		return termbox.ColorYellow
+		return tcell.ColorYellow
 	case Blue:
-		return termbox.ColorBlue
+		return tcell.ColorBlue
 	case Magenta:
-		return termbox.ColorMagenta
+		return tcell.ColorDarkMagenta
 	case Cyan:
-		return termbox.ColorCyan
+		return tcell.ColorLightCyan
+	case Orange:
+		return tcell.ColorOrange
+	case Gold:
+		return tcell.ColorGold
+	case Gray, Grey:
+		return tcell.ColorGray
+	case Fuchsia:
+		return tcell.ColorFuchsia
+	case Brown:
+		return tcell.ColorBrown
+	case Pink:
+		return tcell.ColorPink
+	case Purple:
+		return tcell.ColorPurple
+	case Crimson:
+		return tcell.ColorCrimson
+	case DarkRed:
+		return tcell.ColorDarkRed
+	case DarkBlue:
+		return tcell.ColorDarkBlue
+	case DarkGray, DarkGrey:
+		return tcell.ColorDarkGray
+	case LightBlue:
+		return tcell.ColorLightBlue
+	case LightGray, LightGrey:
+		return tcell.ColorLightGray
+	case White:
+		fallthrough
 	default:
-		return termbox.ColorWhite
+		return tcell.ColorWhite
 	}
 }
 
