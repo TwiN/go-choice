@@ -13,7 +13,7 @@ func TestPickFirstChoice(t *testing.T) {
 		t.Errorf("encountered error while creating simulation screen: %v", err)
 	}
 	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
 	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
 	choice, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
@@ -29,7 +29,7 @@ func TestPickSecondChoice(t *testing.T) {
 		t.Errorf("encountered error while creating simulation screen: %v", err)
 	}
 	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
 	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
 	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
@@ -46,7 +46,7 @@ func TestPickQuit(t *testing.T) {
 		t.Errorf("encountered error while creating simulation screen: %v", err)
 	}
 	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
 	screen.InjectKey(tcell.KeyRune, 'q', tcell.ModNone)
 	_, err = pick("question", []string{"A", "B", "C"}, screen, &config)

@@ -11,9 +11,9 @@ type Choice struct {
 }
 
 type Config struct {
-	TextColor         Color
-	BackgroundColor   Color
-	SelectedTextColor Color
+	TextColor         tcell.Color
+	BackgroundColor   tcell.Color
+	SelectedTextColor tcell.Color
 	SelectedTextBold  bool
 }
 
@@ -99,19 +99,19 @@ type Option func(config *Config)
 
 func OptionTextColor(color Color) func(config *Config) {
 	return func(config *Config) {
-		config.TextColor = color
+		config.TextColor = color.toTcellColor()
 	}
 }
 
 func OptionBackgroundColor(color Color) func(config *Config) {
 	return func(config *Config) {
-		config.BackgroundColor = color
+		config.BackgroundColor = color.toTcellColor()
 	}
 }
 
 func OptionSelectedTextColor(color Color) func(config *Config) {
 	return func(config *Config) {
-		config.SelectedTextColor = color
+		config.SelectedTextColor = color.toTcellColor()
 	}
 }
 
