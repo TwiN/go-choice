@@ -154,7 +154,7 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 		}
 		lineNumber += 1
 	}
-	screen.Sync()
+	screen.Show()
 }
 
 func printText(screen tcell.Screen, x, y int, text string, fg, bg tcell.Color, bold bool) {
