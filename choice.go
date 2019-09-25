@@ -5,15 +5,20 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell"
 	"github.com/mattn/go-runewidth"
+	"strconv"
 	"strings"
 )
 
-var defaultConfig = Config{
-	TextColor:         White.toTcellColor(),
-	BackgroundColor:   Black.toTcellColor(),
-	SelectedTextColor: White.toTcellColor(),
-	SelectedTextBold:  false,
-}
+var (
+	ErrNoChoiceSelected = errors.New("no choice selected")
+	ErrNoChoice         = errors.New("no choices to choose from")
+	defaultConfig       = Config{
+		TextColor:         White.toTcellColor(),
+		BackgroundColor:   Black.toTcellColor(),
+		SelectedTextColor: White.toTcellColor(),
+		SelectedTextBold:  false,
+	}
+)
 
 func Pick(question string, choicesToPickFrom []string, options ...Option) (string, error) {
 	config := defaultConfig
@@ -26,13 +31,12 @@ func Pick(question string, choicesToPickFrom []string, options ...Option) (strin
 	}
 	defer screen.Fini()
 	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
-	screen.Show()
 	return pick(question, choicesToPickFrom, screen, &config)
 }
 
 func pick(question string, choicesToPickFrom []string, screen tcell.Screen, config *Config) (string, error) {
 	if len(choicesToPickFrom) == 0 {
-		return "", errors.New("no choices to choose from")
+		return "", ErrNoChoice
 	}
 	var choices []*Choice
 	for i, choice := range choicesToPickFrom {
@@ -88,7 +92,7 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	<-quit
 
 	if selectedChoice == nil {
-		return "", errors.New("aborted")
+		return "", ErrNoChoiceSelected
 	}
 	return selectedChoice.Value, nil
 }
@@ -129,36 +133,40 @@ func moveDown(choices []*Choice) *Choice {
 }
 
 func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice) {
-	screen.Clear()
-	_, maximumThatCanBeDisplayed := screen.Size()
+	_, screenHeight := screen.Size()
 	lineNumber := 0
+	// Display question
 	questionLines := strings.Split(question, "\n")
-	for _, line := range questionLines {
-		printText(screen, 1, lineNumber, line, config.TextColor, config.BackgroundColor, config.SelectedTextBold)
+	for _, questionLine := range questionLines {
+		printText(screen, 0, lineNumber, fmt.Sprintf(" %s", questionLine), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		lineNumber += 1
 	}
+	// Display all options that can fit in the screen
 	min := selectedChoice.Id + len(questionLines)
-	max := maximumThatCanBeDisplayed
-	if selectedChoice.Id > max {
-		min += 1
-		max += 1
-	}
 	for _, option := range options {
-		if option.Id <= (min+1)-maximumThatCanBeDisplayed && !(option.Id > (min+1)-maximumThatCanBeDisplayed) {
+		if option.Id <= (min+2)-screenHeight && !(option.Id > (min+2)-screenHeight) {
 			continue
 		}
 		if option.Selected {
-			printText(screen, 1, lineNumber, fmt.Sprintf("> %s", option.Value), config.SelectedTextColor, config.BackgroundColor, config.SelectedTextBold)
+			printText(screen, 0, lineNumber, fmt.Sprintf(" > %s", option.Value), config.SelectedTextColor, config.BackgroundColor, config.SelectedTextBold)
 		} else {
-			printText(screen, 3, lineNumber, option.Value, config.TextColor, config.BackgroundColor, config.SelectedTextBold)
+			printText(screen, 0, lineNumber, fmt.Sprintf("   %s", option.Value), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		}
 		lineNumber += 1
+	}
+	// HACK: Instead of using screen.Clear(), draw over the existing text
+	for i := lineNumber; i < screenHeight; i++ {
+		printText(screen, 1, lineNumber, "", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 	}
 	screen.Show()
 }
 
 func printText(screen tcell.Screen, x, y int, text string, fg, bg tcell.Color, bold bool) {
-	for _, character := range text {
+	// Overwrite all existing characters on the line with the new text
+	width, _ := screen.Size()
+	textWithSpaces := fmt.Sprintf("%-"+strconv.Itoa(width)+"s", text)
+	// Write all characters on the screen
+	for _, character := range textWithSpaces {
 		screen.SetCell(x, y, tcell.StyleDefault.Background(bg).Foreground(fg).Bold(bold), character)
 		x += runewidth.RuneWidth(character)
 	}
