@@ -159,7 +159,7 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 
 func printText(screen tcell.Screen, x, y int, text string, fg, bg tcell.Color, bold bool) {
 	for _, character := range text {
-		screen.SetCell(x, y, tcell.StyleDefault.Background(bg).Foreground(fg), character)
+		screen.SetCell(x, y, tcell.StyleDefault.Background(bg).Foreground(fg).Bold(bold), character)
 		x += runewidth.RuneWidth(character)
 	}
 }
