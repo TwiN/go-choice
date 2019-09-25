@@ -9,9 +9,9 @@ import (
 )
 
 var defaultConfig = Config{
-	TextColor:         White,
-	BackgroundColor:   Black,
-	SelectedTextColor: White,
+	TextColor:         White.toTcellColor(),
+	BackgroundColor:   Black.toTcellColor(),
+	SelectedTextColor: White.toTcellColor(),
 	SelectedTextBold:  false,
 }
 
@@ -25,7 +25,7 @@ func Pick(question string, choicesToPickFrom []string, options ...Option) (strin
 		return "", err
 	}
 	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
 	return pick(question, choicesToPickFrom, screen, &config)
 }
@@ -134,7 +134,7 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 	lineNumber := 0
 	questionLines := strings.Split(question, "\n")
 	for _, line := range questionLines {
-		printText(screen, 1, lineNumber, line, config.TextColor.toTcellColor(), config.BackgroundColor.toTcellColor(), config.SelectedTextBold)
+		printText(screen, 1, lineNumber, line, config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		lineNumber += 1
 	}
 	min := selectedChoice.Id + len(questionLines)
@@ -148,9 +148,9 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 			continue
 		}
 		if option.Selected {
-			printText(screen, 1, lineNumber, fmt.Sprintf("> %s", option.Value), config.SelectedTextColor.toTcellColor(), config.BackgroundColor.toTcellColor(), config.SelectedTextBold)
+			printText(screen, 1, lineNumber, fmt.Sprintf("> %s", option.Value), config.SelectedTextColor, config.BackgroundColor, config.SelectedTextBold)
 		} else {
-			printText(screen, 3, lineNumber, option.Value, config.TextColor.toTcellColor(), config.BackgroundColor.toTcellColor(), config.SelectedTextBold)
+			printText(screen, 3, lineNumber, option.Value, config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		}
 		lineNumber += 1
 	}
