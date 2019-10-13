@@ -52,7 +52,7 @@ func TestPickThirdChoice(t *testing.T) {
 		t.Errorf("encountered error while creating simulation screen: %v", err)
 	}
 	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
 	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
 	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
@@ -73,7 +73,7 @@ func TestPickSecondChoiceButWithMoreComplexKeyCombo(t *testing.T) {
 		t.Errorf("encountered error while creating simulation screen: %v", err)
 	}
 	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor.toTcellColor()))
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
 	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
 	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
