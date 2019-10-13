@@ -9,22 +9,22 @@ A very simple library for interactively selecting an option on a terminal
 package main
 
 import (
+    "fmt"
     "github.com/TwinProduction/go-choice"
 )
 
 func main() {
-    choice, err := gochoice.Pick(
-        "What do you want to do?",
+    choice, index, err := gochoice.Pick(
+        "What do you want to do?\nPick:",
         []string{
             "Connect to the production environment",
             "Connect to the test environment",
-           "Update",
-        },
-    )
+            "Update",
+        }, gochoice.OptionBackgroundColor(gochoice.Black), gochoice.OptionSelectedTextColor(gochoice.Red))
     if err != nil {
-        println("You didn't select anything!")
+        fmt.Println("You didn't select anything!")
     } else {
-        println("You have selected: " + choice)
+        fmt.Printf("You have selected: '%s', which is the index %d\n", choice, index)
     }
 }
 ```

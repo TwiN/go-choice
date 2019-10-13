@@ -20,23 +20,23 @@ var (
 	}
 )
 
-func Pick(question string, choicesToPickFrom []string, options ...Option) (string, error) {
+func Pick(question string, choicesToPickFrom []string, options ...Option) (string, int, error) {
 	config := defaultConfig
 	for _, option := range options {
 		option(&config)
 	}
 	screen, err := createScreen()
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defer screen.Fini()
 	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	return pick(question, choicesToPickFrom, screen, &config)
 }
 
-func pick(question string, choicesToPickFrom []string, screen tcell.Screen, config *Config) (string, error) {
+func pick(question string, choicesToPickFrom []string, screen tcell.Screen, config *Config) (string, int, error) {
 	if len(choicesToPickFrom) == 0 {
-		return "", ErrNoChoice
+		return "", 0, ErrNoChoice
 	}
 	var choices []*Choice
 	for i, choice := range choicesToPickFrom {
@@ -92,9 +92,9 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	<-quit
 
 	if selectedChoice == nil {
-		return "", ErrNoChoiceSelected
+		return "", 0, ErrNoChoiceSelected
 	}
-	return selectedChoice.Value, nil
+	return selectedChoice.Value, selectedChoice.Id, nil
 }
 
 func createScreen() (tcell.Screen, error) {
