@@ -66,6 +66,30 @@ func TestPickThirdChoice(t *testing.T) {
 	}
 }
 
+func TestPickThirdChoiceButWithExtraKeyDownInputs(t *testing.T) {
+	config := defaultConfig
+	screen, err := createSimulationScreen()
+	if err != nil {
+		t.Errorf("encountered error while creating simulation screen: %v", err)
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
+	screen.Show()
+	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
+	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
+	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
+	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
+	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
+	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
+	choice, index, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
+	if choice != "C" {
+		t.Error()
+	}
+	if index != 2 {
+		t.Error("Choice 'C' should have returned index 2")
+	}
+}
+
 func TestPickSecondChoiceButWithMoreComplexKeyCombo(t *testing.T) {
 	config := defaultConfig
 	screen, err := createSimulationScreen()
@@ -79,6 +103,50 @@ func TestPickSecondChoiceButWithMoreComplexKeyCombo(t *testing.T) {
 	screen.InjectKey(tcell.KeyDown, 0, tcell.ModNone)
 	screen.InjectKey(tcell.KeyUp, 0, tcell.ModNone)
 	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
+	choice, index, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
+	if choice != "B" {
+		t.Error()
+	}
+	if index != 1 {
+		t.Error("Choice 'B' should have returned index 1")
+	}
+}
+
+func TestPickSecondChoiceButWithWASDKeysCombo(t *testing.T) {
+	config := defaultConfig
+	screen, err := createSimulationScreen()
+	if err != nil {
+		t.Errorf("encountered error while creating simulation screen: %v", err)
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
+	screen.Show()
+	screen.InjectKey(tcell.KeyRune, 's', tcell.ModNone) // down
+	screen.InjectKey(tcell.KeyRune, 's', tcell.ModNone) // down
+	screen.InjectKey(tcell.KeyRune, 'w', tcell.ModNone) // up
+	screen.InjectKey(tcell.KeyRune, 'd', tcell.ModNone) // select
+	choice, index, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
+	if choice != "B" {
+		t.Error()
+	}
+	if index != 1 {
+		t.Error("Choice 'B' should have returned index 1")
+	}
+}
+
+func TestPickSecondChoiceButWithHJKLKeysCombo(t *testing.T) {
+	config := defaultConfig
+	screen, err := createSimulationScreen()
+	if err != nil {
+		t.Errorf("encountered error while creating simulation screen: %v", err)
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
+	screen.Show()
+	screen.InjectKey(tcell.KeyRune, 'j', tcell.ModNone) // down
+	screen.InjectKey(tcell.KeyRune, 'j', tcell.ModNone) // down
+	screen.InjectKey(tcell.KeyRune, 'k', tcell.ModNone) // up
+	screen.InjectKey(tcell.KeyRune, 'l', tcell.ModNone) // select
 	choice, index, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
 	if choice != "B" {
 		t.Error()
