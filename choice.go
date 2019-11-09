@@ -61,7 +61,7 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 					// The current selected choice is already set, so we just quit
 					close(quit)
 					return
-				case tcell.KeyEscape:
+				case tcell.KeyEscape, tcell.KeyCtrlC:
 					// No choices were selected, so we'll set selectedChoice to nil and quit
 					selectedChoice = nil
 					close(quit)
