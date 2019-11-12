@@ -156,7 +156,7 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 	}
 	// HACK: Instead of using screen.Clear(), draw over the existing text
 	for i := lineNumber; i < screenHeight; i++ {
-		printText(screen, 1, lineNumber, "", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
+		printText(screen, 1, i, "", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 	}
 	screen.Show()
 }
