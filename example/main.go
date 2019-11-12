@@ -14,7 +14,11 @@ func main() {
 			"Update",
 		}, gochoice.OptionBackgroundColor(gochoice.Black), gochoice.OptionSelectedTextColor(gochoice.Red))
 	if err != nil {
-		fmt.Println("You didn't select anything!")
+		if err == gochoice.ErrNoChoiceSelected {
+			fmt.Println("You didn't select anything!")
+		} else {
+			panic(err)
+		}
 	} else {
 		fmt.Printf("You have selected: '%s', which is the index %d\n", choice, index)
 	}

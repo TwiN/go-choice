@@ -2,10 +2,7 @@ package gochoice
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gdamore/tcell"
-	"github.com/mattn/go-runewidth"
-	"strconv"
 	"strings"
 )
 
@@ -45,7 +42,6 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 
 	quit := make(chan struct{})
 	var selectedChoice = choices[0]
-
 	go func() {
 		for {
 			go render(screen, question, choices, config, selectedChoice)
@@ -54,9 +50,17 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 			case *tcell.EventKey:
 				switch ev.Key() {
 				case tcell.KeyUp:
-					selectedChoice = moveUp(choices)
+					selectedChoice = moveUp(choices, 1)
 				case tcell.KeyDown:
-					selectedChoice = moveDown(choices)
+					selectedChoice = moveDown(choices, 1)
+				case tcell.KeyHome:
+					selectedChoice = moveUp(choices, len(choices))
+				case tcell.KeyEnd:
+					selectedChoice = moveDown(choices, len(choices))
+				case tcell.KeyPgUp:
+					selectedChoice = moveUp(choices, computePageSize(screen, question))
+				case tcell.KeyPgDn:
+					selectedChoice = moveDown(choices, computePageSize(screen, question))
 				case tcell.KeyEnter, tcell.KeyRight:
 					// The current selected choice is already set, so we just quit
 					close(quit)
@@ -69,9 +73,9 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 				case tcell.KeyRune:
 					switch ev.Rune() {
 					case 'k', 'w': // Up
-						selectedChoice = moveUp(choices)
+						selectedChoice = moveUp(choices, 1)
 					case 'j', 's': // Down
-						selectedChoice = moveDown(choices)
+						selectedChoice = moveDown(choices, 1)
 					case ' ', 'l', 'd': // Select
 						// The current selected choice is already set, so we just quit
 						close(quit)
@@ -97,25 +101,30 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	return selectedChoice.Value, selectedChoice.Id, nil
 }
 
-func createScreen() (tcell.Screen, error) {
-	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
-	screen, err := tcell.NewScreen()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new screen: %v", err)
+func computePageSize(screen tcell.Screen, question string) int {
+	_, height := screen.Size()
+	questionLines := len(strings.Split(question, "\n"))
+	if height > questionLines {
+		height -= questionLines + 1
 	}
-	if err := screen.Init(); err != nil {
-		return nil, fmt.Errorf("failed to initialize screen: %v", err)
-	}
-	return screen, nil
+	return height
 }
 
 func move(choices []*Choice, increment int) *Choice {
 	for i, choice := range choices {
 		if choice.Selected {
-			if i+increment < len(choices) && i+increment >= 0 {
+			if i+increment < len(choices) && i+increment > 0 { // Between 0 and last choice
 				choices[i].Selected = false
 				choices[i+increment].Selected = true
 				return choices[i+increment]
+			} else if i+increment >= len(choices) { // Higher than last choice
+				choices[i].Selected = false
+				choices[len(choices)-1].Selected = true
+				return choices[len(choices)-1]
+			} else if i+increment <= 0 { // Lower than 0
+				choices[i].Selected = false
+				choices[0].Selected = true
+				return choices[0]
 			}
 			// Choice didn't change, return it
 			return choice
@@ -124,50 +133,10 @@ func move(choices []*Choice, increment int) *Choice {
 	panic("Something went wrong")
 }
 
-func moveUp(choices []*Choice) *Choice {
-	return move(choices, -1)
+func moveUp(choices []*Choice, step int) *Choice {
+	return move(choices, -step)
 }
 
-func moveDown(choices []*Choice) *Choice {
-	return move(choices, 1)
-}
-
-func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice) {
-	_, screenHeight := screen.Size()
-	lineNumber := 0
-	// Display question
-	questionLines := strings.Split(question, "\n")
-	for _, questionLine := range questionLines {
-		printText(screen, 0, lineNumber, fmt.Sprintf(" %s", questionLine), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
-		lineNumber += 1
-	}
-	// Display all options that can fit in the screen
-	min := selectedChoice.Id + len(questionLines)
-	for _, option := range options {
-		if option.Id <= (min+2)-screenHeight && !(option.Id > (min+2)-screenHeight) {
-			continue
-		}
-		if option.Selected {
-			printText(screen, 0, lineNumber, fmt.Sprintf(" > %s", option.Value), config.SelectedTextColor, config.BackgroundColor, config.SelectedTextBold)
-		} else {
-			printText(screen, 0, lineNumber, fmt.Sprintf("   %s", option.Value), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
-		}
-		lineNumber += 1
-	}
-	// HACK: Instead of using screen.Clear(), draw over the existing text
-	for i := lineNumber; i < screenHeight; i++ {
-		printText(screen, 1, i, "", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
-	}
-	screen.Show()
-}
-
-func printText(screen tcell.Screen, x, y int, text string, fg, bg tcell.Color, bold bool) {
-	// Overwrite all existing characters on the line with the new text
-	width, _ := screen.Size()
-	textWithSpaces := fmt.Sprintf("%-"+strconv.Itoa(width)+"s", text)
-	// Write all characters on the screen
-	for _, character := range textWithSpaces {
-		screen.SetCell(x, y, tcell.StyleDefault.Background(bg).Foreground(fg).Bold(bold), character)
-		x += runewidth.RuneWidth(character)
-	}
+func moveDown(choices []*Choice, step int) *Choice {
+	return move(choices, step)
 }
