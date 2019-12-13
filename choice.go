@@ -17,6 +17,7 @@ var (
 	}
 )
 
+// Pick prompts the user to choose an option from a list of choices
 func Pick(question string, choicesToPickFrom []string, options ...Option) (string, int, error) {
 	config := defaultConfig
 	for _, option := range options {
