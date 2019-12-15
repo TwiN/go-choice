@@ -20,7 +20,7 @@ func createScreen() (tcell.Screen, error) {
 	return screen, nil
 }
 
-// Renders content on the screen
+// render renders the question, options and the selected choice with the given configuration
 func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice) {
 	_, screenHeight := screen.Size()
 	lineNumber := 0
@@ -50,7 +50,7 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 	screen.Show()
 }
 
-// Prints text a screen
+// printText prints text on the given screen
 func printText(screen tcell.Screen, x, y int, text string, fg, bg tcell.Color, bold bool) {
 	// Overwrite all existing characters on the line with the new text
 	width, _ := screen.Size()
