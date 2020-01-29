@@ -8,6 +8,8 @@ github.com/lucasb-eyer/go-colorful v1.0.2 h1:mCMFu6PgSozg9tDNMMK3g18oJBX7oYGrC09
 github.com/lucasb-eyer/go-colorful v1.0.2/go.mod h1:0MS4r+7BZKSJ5mw4/S5MPN+qHFF1fYclkSPilDOKW0s=
 github.com/mattn/go-runewidth v0.0.4 h1:2BvfKmzob6Bmd4YsL0zygOqfdFnK7GR4QL06Do4/p7Y=
 github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
+github.com/micmonay/keybd_event v1.0.1 h1:SaSmom2ilVOUl9ftO6Dq/Rshklpn5ik0sai3/juFquI=
+github.com/micmonay/keybd_event v1.0.1/go.mod h1:QS2Kfz0PbPezFqMPEot+l/cK78/tHLZtZ7AbYUCRKsQ=
 golang.org/x/sys v0.0.0-20190626150813-e07cf5db2756 h1:9nuHUbU8dRnRRfj9KjWUVrJeoexdbeMjttk6Oh1rD10=
 golang.org/x/sys v0.0.0-20190626150813-e07cf5db2756/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=

@@ -3,6 +3,7 @@ package gochoice
 import (
 	"errors"
 	"github.com/gdamore/tcell"
+	"github.com/micmonay/keybd_event"
 	"strings"
 )
 
@@ -28,6 +29,7 @@ func Pick(question string, choicesToPickFrom []string, options ...Option) (strin
 		return "", 0, err
 	}
 	defer screen.Fini()
+	defer sendExtraEventFix()
 	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	return pick(question, choicesToPickFrom, screen, &config)
 }
@@ -140,4 +142,18 @@ func moveUp(choices []*Choice, step int) *Choice {
 
 func moveDown(choices []*Choice, step int) *Choice {
 	return move(choices, step)
+}
+
+// This method avoid tcell bug https://github.com/gdamore/tcell/issues/194
+// Additional EOL event is sent to ensure, consequent events, are correctly handled
+func sendExtraEventFix() {
+	kb, err := keybd_event.NewKeyBonding()
+	if err != nil {
+		panic(err)
+	}
+	kb.SetKeys(keybd_event.VK_ENTER)
+	err = kb.Launching()
+	if err != nil {
+		panic(err)
+	}
 }
