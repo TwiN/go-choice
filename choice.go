@@ -2,8 +2,9 @@ package gochoice
 
 import (
 	"errors"
-	"github.com/gdamore/tcell"
 	"strings"
+
+	"github.com/gdamore/tcell"
 )
 
 var (
@@ -42,10 +43,11 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	}
 
 	quit := make(chan struct{})
-	var selectedChoice = choices[0]
+	selectedChoice := choices[0]
+	var searchQuery string
 	go func() {
 		for {
-			go render(screen, question, choices, config, selectedChoice)
+			render(screen, question, choices, config, selectedChoice, searchQuery)
 			ev := screen.PollEvent()
 			switch ev := ev.(type) {
 			case *tcell.EventKey:
@@ -62,31 +64,25 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 					selectedChoice = moveUp(choices, computePageSize(screen, question))
 				case tcell.KeyPgDn:
 					selectedChoice = moveDown(choices, computePageSize(screen, question))
+				case tcell.KeyBackspace, tcell.KeyBackspace2:
+					if len(searchQuery) > 0 {
+						searchQuery = searchQuery[:len(searchQuery)-1]
+						render(screen, question, choices, config, selectedChoice, searchQuery)
+						selectedChoice = moveUp(choices, len(choices))
+					}
 				case tcell.KeyEnter, tcell.KeyRight:
 					// The current selected choice is already set, so we just quit
 					close(quit)
 					return
-				case tcell.KeyEscape, tcell.KeyCtrlC:
+				case tcell.KeyEscape, tcell.KeyCtrlC, tcell.KeyLeft:
 					// No choices were selected, so we'll set selectedChoice to nil and quit
 					selectedChoice = nil
 					close(quit)
 					return
 				case tcell.KeyRune:
-					switch ev.Rune() {
-					case 'k', 'w': // Up
-						selectedChoice = moveUp(choices, 1)
-					case 'j', 's': // Down
-						selectedChoice = moveDown(choices, 1)
-					case ' ', 'l', 'd': // Select
-						// The current selected choice is already set, so we just quit
-						close(quit)
-						return
-					case 'q': // Quit
-						// No choices were selected, so we'll set selectedChoice to nil and quit
-						selectedChoice = nil
-						close(quit)
-						return
-					}
+					searchQuery += string(ev.Rune())
+					render(screen, question, choices, config, selectedChoice, searchQuery)
+					selectedChoice = moveUp(choices, len(choices))
 				}
 			case *tcell.EventResize:
 				screen.Sync()
@@ -112,20 +108,44 @@ func computePageSize(screen tcell.Screen, question string) int {
 }
 
 func move(choices []*Choice, increment int) *Choice {
-	for i, choice := range choices {
+	var choicesNotHidden []*Choice
+	selectedChoiceExists := false
+	for _, choice := range choices {
+		if !choice.hidden {
+			choicesNotHidden = append(choicesNotHidden, choice)
+			if choice.Selected {
+				selectedChoiceExists = true
+			}
+		} else {
+			// If we have a hidden choice selected, we need to find the closest one
+			if choice.Selected {
+				choice.Selected = false
+			}
+		}
+	}
+	if len(choicesNotHidden) == 0 {
+		//println("ggwp returning nil")
+		return nil
+	}
+	if !selectedChoiceExists {
+		//println("selected choice is hidden " + choicesNotHidden[0].Value)
+		choicesNotHidden[0].Selected = true
+		return choicesNotHidden[0]
+	}
+	for i, choice := range choicesNotHidden {
 		if choice.Selected {
-			if i+increment < len(choices) && i+increment > 0 { // Between 0 and last choice
-				choices[i].Selected = false
-				choices[i+increment].Selected = true
-				return choices[i+increment]
-			} else if i+increment >= len(choices) { // Higher than last choice
-				choices[i].Selected = false
-				choices[len(choices)-1].Selected = true
-				return choices[len(choices)-1]
+			if i+increment < len(choicesNotHidden) && i+increment > 0 { // Between 0 and last choice
+				choicesNotHidden[i].Selected = false
+				choicesNotHidden[i+increment].Selected = true
+				return choicesNotHidden[i+increment]
+			} else if i+increment >= len(choicesNotHidden) { // Higher than last choice
+				choicesNotHidden[i].Selected = false
+				choicesNotHidden[len(choicesNotHidden)-1].Selected = true
+				return choicesNotHidden[len(choicesNotHidden)-1]
 			} else if i+increment <= 0 { // Lower than 0
-				choices[i].Selected = false
-				choices[0].Selected = true
-				return choices[0]
+				choicesNotHidden[i].Selected = false
+				choicesNotHidden[0].Selected = true
+				return choicesNotHidden[0]
 			}
 			// Choice didn't change, return it
 			return choice

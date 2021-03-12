@@ -2,8 +2,9 @@ package gochoice
 
 import (
 	"fmt"
-	"github.com/gdamore/tcell"
 	"testing"
+
+	"github.com/gdamore/tcell"
 )
 
 func TestPickFirstChoice(t *testing.T) {
@@ -155,50 +156,6 @@ func TestPickSecondChoiceButWithMoreComplexKeyCombo(t *testing.T) {
 	}
 }
 
-func TestPickSecondChoiceButWithWASDKeysCombo(t *testing.T) {
-	config := defaultConfig
-	screen, err := createSimulationScreen()
-	if err != nil {
-		t.Errorf("encountered error while creating simulation screen: %v", err)
-	}
-	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
-	screen.Show()
-	screen.InjectKey(tcell.KeyRune, 's', tcell.ModNone) // down
-	screen.InjectKey(tcell.KeyRune, 's', tcell.ModNone) // down
-	screen.InjectKey(tcell.KeyRune, 'w', tcell.ModNone) // up
-	screen.InjectKey(tcell.KeyRune, 'd', tcell.ModNone) // select
-	choice, index, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
-	if choice != "B" {
-		t.Error()
-	}
-	if index != 1 {
-		t.Error("Choice 'B' should have returned index 1")
-	}
-}
-
-func TestPickSecondChoiceButWithHJKLKeysCombo(t *testing.T) {
-	config := defaultConfig
-	screen, err := createSimulationScreen()
-	if err != nil {
-		t.Errorf("encountered error while creating simulation screen: %v", err)
-	}
-	defer screen.Fini()
-	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
-	screen.Show()
-	screen.InjectKey(tcell.KeyRune, 'j', tcell.ModNone) // down
-	screen.InjectKey(tcell.KeyRune, 'j', tcell.ModNone) // down
-	screen.InjectKey(tcell.KeyRune, 'k', tcell.ModNone) // up
-	screen.InjectKey(tcell.KeyRune, 'l', tcell.ModNone) // select
-	choice, index, _ := pick("question", []string{"A", "B", "C"}, screen, &config)
-	if choice != "B" {
-		t.Error()
-	}
-	if index != 1 {
-		t.Error("Choice 'B' should have returned index 1")
-	}
-}
-
 func TestPickQuit(t *testing.T) {
 	config := defaultConfig
 	screen, err := createSimulationScreen()
@@ -208,10 +165,78 @@ func TestPickQuit(t *testing.T) {
 	defer screen.Fini()
 	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
 	screen.Show()
-	screen.InjectKey(tcell.KeyRune, 'q', tcell.ModNone)
+	screen.InjectKey(tcell.KeyEscape, 0, tcell.ModNone)
 	_, _, err = pick("question", []string{"A", "B", "C"}, screen, &config)
 	if err == nil {
 		t.Error()
+	}
+}
+
+func TestPickSearch(t *testing.T) {
+	config := defaultConfig
+	screen, err := createSimulationScreen()
+	if err != nil {
+		t.Errorf("encountered error while creating simulation screen: %v", err)
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
+	screen.Show()
+	screen.InjectKey(tcell.KeyRune, 'd', tcell.ModNone)
+	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
+	choice, index, err := pick("question", []string{"john", "doe", "jane"}, screen, &config)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if choice != "doe" {
+		t.Error("expected doe, got", choice)
+	}
+	if index != 1 {
+		t.Error("expected 1, got", index)
+	}
+}
+
+func TestPickSearchNoResult(t *testing.T) {
+	config := defaultConfig
+	screen, err := createSimulationScreen()
+	if err != nil {
+		t.Errorf("encountered error while creating simulation screen: %v", err)
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
+	screen.Show()
+	screen.InjectKey(tcell.KeyRune, 'z', tcell.ModNone)
+	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
+	_, _, err = pick("question", []string{"john", "doe", "jane"}, screen, &config)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestPickSearchComplex(t *testing.T) {
+	config := defaultConfig
+	screen, err := createSimulationScreen()
+	if err != nil {
+		t.Errorf("encountered error while creating simulation screen: %v", err)
+	}
+	defer screen.Fini()
+	screen.SetStyle(tcell.StyleDefault.Background(config.BackgroundColor))
+	screen.Show()
+	screen.InjectKey(tcell.KeyRune, 'j', tcell.ModNone)
+	screen.InjectKey(tcell.KeyRune, 'a', tcell.ModNone)
+	screen.InjectKey(tcell.KeyRune, 'n', tcell.ModNone)
+	screen.InjectKey(tcell.KeyRune, 'e', tcell.ModNone)
+	screen.InjectKey(tcell.KeyRune, 'z', tcell.ModNone)
+	screen.InjectKey(tcell.KeyBackspace, 0, tcell.ModNone)
+	screen.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
+	choice, index, err := pick("question", []string{"john", "doe", "jane"}, screen, &config)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	if choice != "jane" {
+		t.Error("expected jane, got", choice)
+	}
+	if index != 2 {
+		t.Error("expected 2, got", index)
 	}
 }
 

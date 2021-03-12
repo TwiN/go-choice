@@ -2,10 +2,11 @@ package gochoice
 
 import (
 	"fmt"
-	"github.com/gdamore/tcell"
-	"github.com/mattn/go-runewidth"
 	"strconv"
 	"strings"
+
+	"github.com/gdamore/tcell"
+	"github.com/mattn/go-runewidth"
 )
 
 func createScreen() (tcell.Screen, error) {
@@ -21,19 +22,37 @@ func createScreen() (tcell.Screen, error) {
 }
 
 // render renders the question, options and the selected choice with the given configuration
-func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice) {
+func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice, searchQuery string) {
 	_, screenHeight := screen.Size()
 	lineNumber := 0
 	// Display question
 	questionLines := strings.Split(question, "\n")
 	for _, questionLine := range questionLines {
 		printText(screen, 0, lineNumber, fmt.Sprintf(" %s", questionLine), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
-		lineNumber += 1
+		lineNumber++
+	}
+	selectedChoiceIndex := 0
+	numberOfOptionsNotHidden := 0
+	for _, option := range options {
+		if len(searchQuery) > 0 && !strings.Contains(option.Value, searchQuery) {
+			option.hidden = true
+		} else {
+			option.hidden = false
+			if option.Selected {
+				selectedChoiceIndex = numberOfOptionsNotHidden
+			}
+			numberOfOptionsNotHidden++
+		}
 	}
 	// Display all options that can fit in the screen
-	min := selectedChoice.Id + len(questionLines)
-	for i, option := range options {
-		if option.Id <= (min+2)-screenHeight && !(option.Id > (min+2)-screenHeight) && i-screenHeight < min {
+	min := selectedChoiceIndex + len(questionLines)
+	visibleOptionIndex := 0
+	for _, option := range options {
+		if option.hidden {
+			continue
+		}
+		visibleOptionIndex++
+		if visibleOptionIndex <= (min+2)-screenHeight && !(visibleOptionIndex > (min+2)-screenHeight) && visibleOptionIndex-screenHeight < min {
 			continue
 		}
 		if option.Selected {
@@ -41,12 +60,17 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 		} else {
 			printText(screen, 0, lineNumber, fmt.Sprintf("   %s", option.Value), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		}
-		lineNumber += 1
+		lineNumber++
+	}
+	if numberOfOptionsNotHidden == 0 {
+		printText(screen, 1, lineNumber, " ! There are no choices matching your search query", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
+		lineNumber++
 	}
 	// HACK: Instead of using screen.Clear(), draw over the existing text
 	for i := lineNumber; i < screenHeight; i++ {
 		printText(screen, 1, i, "", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 	}
+	printText(screen, 1, screenHeight-1, "Search: "+searchQuery+"_", config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 	screen.Show()
 }
 

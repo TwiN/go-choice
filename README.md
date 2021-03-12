@@ -10,6 +10,7 @@ package main
 
 import (
     "fmt"
+
     "github.com/TwinProduction/go-choice"
 )
 
@@ -39,6 +40,7 @@ package main
 
 import (
     "fmt"
+
     "github.com/TwinProduction/go-choice"
 )
 

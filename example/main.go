@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/TwinProduction/go-choice"
 )
 
@@ -10,7 +11,9 @@ func main() {
 		"What do you want to do?\nPick:",
 		[]string{
 			"Connect to the production environment",
+			"Connect to the staging environment",
 			"Connect to the test environment",
+			"Create a new environment",
 			"Update",
 		}, gochoice.OptionBackgroundColor(gochoice.Black), gochoice.OptionSelectedTextColor(gochoice.Red))
 	if err != nil {

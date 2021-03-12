@@ -8,6 +8,8 @@ type Choice struct {
 	Id       int
 	Value    string
 	Selected bool
+
+	hidden bool
 }
 
 type Config struct {
