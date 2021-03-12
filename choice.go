@@ -124,11 +124,9 @@ func move(choices []*Choice, increment int) *Choice {
 		}
 	}
 	if len(choicesNotHidden) == 0 {
-		//println("ggwp returning nil")
 		return nil
 	}
 	if !selectedChoiceExists {
-		//println("selected choice is hidden " + choicesNotHidden[0].Value)
 		choicesNotHidden[0].Selected = true
 		return choicesNotHidden[0]
 	}
