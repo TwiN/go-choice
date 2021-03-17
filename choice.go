@@ -8,9 +8,15 @@ import (
 )
 
 var (
+	// ErrNoChoiceSelected is the error returned when no choices have been selected.
+	// This can happen when the user quits the application by terminating the process (e.g. CTRL+C) or by
+	// by exiting the application through the ESC key or the left arrow key.
 	ErrNoChoiceSelected = errors.New("no choice selected")
-	ErrNoChoice         = errors.New("no choices to choose from")
-	defaultConfig       = Config{
+
+	// ErrNoChoice is the error returned when there are no choices to pick from
+	ErrNoChoice = errors.New("no choices to choose from")
+
+	defaultConfig = Config{
 		TextColor:         White.toTcellColor(),
 		BackgroundColor:   Black.toTcellColor(),
 		SelectedTextColor: White.toTcellColor(),
