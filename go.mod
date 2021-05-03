@@ -1,6 +1,6 @@
 module github.com/TwinProduction/go-choice
 
-go 1.15
+go 1.16
 
 require (
 	github.com/gdamore/tcell v1.2.0
