@@ -9,8 +9,8 @@ import (
 
 var (
 	// ErrNoChoiceSelected is the error returned when no choices have been selected.
-	// This can happen when the user quits the application by terminating the process (e.g. CTRL+C) or by
-	// by exiting the application through the ESC key or the left arrow key.
+	// This can happen when the user quits the application by terminating the process (e.g. CTRL+C)
+	// or by exiting the application through the ESC key or the left arrow key.
 	ErrNoChoiceSelected = errors.New("no choice selected")
 
 	// ErrNoChoice is the error returned when there are no choices to pick from
@@ -47,7 +47,6 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	for i, choice := range choicesToPickFrom {
 		choices = append(choices, &Choice{Id: i, Value: choice, Selected: i == 0})
 	}
-
 	quit := make(chan struct{})
 	selectedChoice := choices[0]
 	var searchQuery string
@@ -95,9 +94,7 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 			}
 		}
 	}()
-
 	<-quit
-
 	if selectedChoice == nil {
 		return "", 0, ErrNoChoiceSelected
 	}
