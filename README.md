@@ -11,7 +11,7 @@ package main
 import (
     "fmt"
 
-    "github.com/TwinProduction/go-choice"
+    "github.com/TwiN/go-choice"
 )
 
 func main() {
@@ -41,7 +41,7 @@ package main
 import (
     "fmt"
 
-    "github.com/TwinProduction/go-choice"
+    "github.com/TwiN/go-choice"
 )
 
 func main() {

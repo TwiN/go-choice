@@ -1,4 +1,4 @@
-module github.com/TwinProduction/go-choice
+module github.com/TwiN/go-choice
 
 go 1.16
 
