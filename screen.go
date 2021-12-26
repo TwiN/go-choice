@@ -34,7 +34,7 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 	selectedChoiceIndex := 0
 	numberOfOptionsNotHidden := 0
 	for _, option := range options {
-		if len(searchQuery) > 0 && !strings.Contains(option.Value, searchQuery) {
+		if len(searchQuery) > 0 && !strings.Contains(strings.ToLower(option.Value), strings.ToLower(searchQuery)) {
 			option.hidden = true
 		} else {
 			option.hidden = false
