@@ -1,4 +1,5 @@
 # go-choice
+![test](https://github.com/TwiN/go-choice/workflows/test/badge.svg?branch=master)
 
 A very simple library for interactively selecting an option on a terminal 
 
