@@ -32,7 +32,7 @@ func main() {
 }
 ```
 
-![example](assets/example.gif)
+![example](.github/assets/example.gif)
 
 You can customize the experience further by appending options at the end of the `Pick` function:
 
