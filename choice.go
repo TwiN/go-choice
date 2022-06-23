@@ -43,18 +43,17 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	if len(choicesToPickFrom) == 0 {
 		return "", 0, ErrNoChoice
 	}
-	var choices []*Choice
-	for i, choice := range choicesToPickFrom {
-		choices = append(choices, &Choice{Id: i, Value: choice, Selected: i == 0})
+	var choices []*choice
+	for i, c := range choicesToPickFrom {
+		choices = append(choices, &choice{ID: i, Value: c, Selected: i == 0})
 	}
 	quit := make(chan struct{})
 	selectedChoice := choices[0]
 	var searchQuery string
 	go func() {
 		for {
-			render(screen, question, choices, config, selectedChoice, searchQuery)
-			ev := screen.PollEvent()
-			switch ev := ev.(type) {
+			render(screen, question, choices, config, searchQuery)
+			switch ev := screen.PollEvent().(type) {
 			case *tcell.EventKey:
 				switch ev.Key() {
 				case tcell.KeyUp:
@@ -72,7 +71,7 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 				case tcell.KeyBackspace, tcell.KeyBackspace2:
 					if len(searchQuery) > 0 {
 						searchQuery = searchQuery[:len(searchQuery)-1]
-						render(screen, question, choices, config, selectedChoice, searchQuery)
+						render(screen, question, choices, config, searchQuery)
 						selectedChoice = moveUp(choices, len(choices))
 					}
 				case tcell.KeyEnter, tcell.KeyRight:
@@ -86,7 +85,7 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 					return
 				case tcell.KeyRune:
 					searchQuery += string(ev.Rune())
-					render(screen, question, choices, config, selectedChoice, searchQuery)
+					render(screen, question, choices, config, searchQuery)
 					selectedChoice = moveUp(choices, len(choices))
 				}
 			case *tcell.EventResize:
@@ -98,7 +97,7 @@ func pick(question string, choicesToPickFrom []string, screen tcell.Screen, conf
 	if selectedChoice == nil {
 		return "", 0, ErrNoChoiceSelected
 	}
-	return selectedChoice.Value, selectedChoice.Id, nil
+	return selectedChoice.Value, selectedChoice.ID, nil
 }
 
 func computePageSize(screen tcell.Screen, question string) int {
@@ -110,19 +109,19 @@ func computePageSize(screen tcell.Screen, question string) int {
 	return height
 }
 
-func move(choices []*Choice, increment int) *Choice {
-	var choicesNotHidden []*Choice
+func move(choices []*choice, increment int) *choice {
+	var choicesNotHidden []*choice
 	selectedChoiceExists := false
-	for _, choice := range choices {
-		if !choice.hidden {
-			choicesNotHidden = append(choicesNotHidden, choice)
-			if choice.Selected {
+	for _, c := range choices {
+		if !c.hidden {
+			choicesNotHidden = append(choicesNotHidden, c)
+			if c.Selected {
 				selectedChoiceExists = true
 			}
 		} else {
-			// If we have a hidden choice selected, we need to find the closest one
-			if choice.Selected {
-				choice.Selected = false
+			// If we have a hidden c selected, we need to find the closest one
+			if c.Selected {
+				c.Selected = false
 			}
 		}
 	}
@@ -133,13 +132,13 @@ func move(choices []*Choice, increment int) *Choice {
 		choicesNotHidden[0].Selected = true
 		return choicesNotHidden[0]
 	}
-	for i, choice := range choicesNotHidden {
-		if choice.Selected {
-			if i+increment < len(choicesNotHidden) && i+increment > 0 { // Between 0 and last choice
+	for i, c := range choicesNotHidden {
+		if c.Selected {
+			if i+increment < len(choicesNotHidden) && i+increment > 0 { // Between 0 and last c
 				choicesNotHidden[i].Selected = false
 				choicesNotHidden[i+increment].Selected = true
 				return choicesNotHidden[i+increment]
-			} else if i+increment >= len(choicesNotHidden) { // Higher than last choice
+			} else if i+increment >= len(choicesNotHidden) { // Higher than last c
 				choicesNotHidden[i].Selected = false
 				choicesNotHidden[len(choicesNotHidden)-1].Selected = true
 				return choicesNotHidden[len(choicesNotHidden)-1]
@@ -149,16 +148,16 @@ func move(choices []*Choice, increment int) *Choice {
 				return choicesNotHidden[0]
 			}
 			// Choice didn't change, return it
-			return choice
+			return c
 		}
 	}
 	panic("Something went wrong")
 }
 
-func moveUp(choices []*Choice, step int) *Choice {
+func moveUp(choices []*choice, step int) *choice {
 	return move(choices, -step)
 }
 
-func moveDown(choices []*Choice, step int) *Choice {
+func moveDown(choices []*choice, step int) *choice {
 	return move(choices, step)
 }

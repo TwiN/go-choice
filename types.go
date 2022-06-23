@@ -4,8 +4,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-type Choice struct {
-	Id       int
+type choice struct {
+	ID       int
 	Value    string
 	Selected bool
 

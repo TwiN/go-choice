@@ -21,14 +21,14 @@ func createScreen() (tcell.Screen, error) {
 	return screen, nil
 }
 
-// render renders the question, options and the selected choice with the given configuration
-func render(screen tcell.Screen, question string, options []*Choice, config *Config, selectedChoice *Choice, searchQuery string) {
+// render the question, options and the selected choice with the given configuration
+func render(screen tcell.Screen, question string, options []*choice, config *Config, searchQuery string) {
 	_, screenHeight := screen.Size()
 	lineNumber := 0
 	// Display question
 	questionLines := strings.Split(question, "\n")
 	for _, questionLine := range questionLines {
-		printText(screen, 0, lineNumber, fmt.Sprintf(" %s", questionLine), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
+		printText(screen, 0, lineNumber, " "+questionLine, config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		lineNumber++
 	}
 	selectedChoiceIndex := 0
@@ -56,9 +56,9 @@ func render(screen tcell.Screen, question string, options []*Choice, config *Con
 			continue
 		}
 		if option.Selected {
-			printText(screen, 0, lineNumber, fmt.Sprintf(" > %s", option.Value), config.SelectedTextColor, config.BackgroundColor, config.SelectedTextBold)
+			printText(screen, 0, lineNumber, " > "+option.Value, config.SelectedTextColor, config.BackgroundColor, config.SelectedTextBold)
 		} else {
-			printText(screen, 0, lineNumber, fmt.Sprintf("   %s", option.Value), config.TextColor, config.BackgroundColor, config.SelectedTextBold)
+			printText(screen, 0, lineNumber, "   "+option.Value, config.TextColor, config.BackgroundColor, config.SelectedTextBold)
 		}
 		lineNumber++
 	}
