@@ -1,6 +1,6 @@
 module github.com/TwiN/go-choice
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gdamore/tcell/v2 v2.5.0
