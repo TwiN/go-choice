@@ -13,10 +13,10 @@ func createScreen() (tcell.Screen, error) {
 	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new screen: %v", err)
+		return nil, fmt.Errorf("failed to create new screen: %w", err)
 	}
 	if err := screen.Init(); err != nil {
-		return nil, fmt.Errorf("failed to initialize screen: %v", err)
+		return nil, fmt.Errorf("failed to initialize screen: %w", err)
 	}
 	return screen, nil
 }
